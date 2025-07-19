@@ -19,6 +19,8 @@ class Helper {
 
         static wxColor getNextColor(int* red, int* green, int* blue);
         static double degreesToRadians(double degrees);
+        static std::vector<wxRealPoint> GetWorldCorners(double rotationAngle, double diagonalLength, wxRealPoint centerPosition);
+        static std::vector<wxRealPoint> GetObjectCorners(double rotationAngle, double diagonalLength);
         static wxGraphicsPath DrawPath(double rotationAngle, int cornerRadius, double diagonalLength, wxGraphicsContext* gc);
         static wxRealPoint rotatePointByDegrees(wxRealPoint point, double degrees);
         static wxRealPoint rotatePointByRadians(wxRealPoint point, double radians);

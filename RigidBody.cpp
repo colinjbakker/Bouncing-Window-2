@@ -82,22 +82,8 @@ void RigidBody::SetDragged(bool dragging, wxRealPoint pivot){
     }
 }
 
-std::vector<wxRealPoint> RigidBody::GetWorldCorners() {
-    std::vector<wxRealPoint> corners(4);
-    double halfDiagonalLength = diagonalLength / 2;
-    int i;
-    for(i = 0; i < 4; i++){
-        double currAngle = Helper::degreesToRadians(rotationAngle + (90 * i));
-        corners[i] = wxRealPoint(
-            centerPosition.x + halfDiagonalLength * cos(currAngle),
-            centerPosition.y + halfDiagonalLength * sin(currAngle)
-        );
-    }
-    return corners;
-}
-
 wxRect2DDouble RigidBody::ComputeAABB() {
-    std::vector<wxRealPoint> corners = GetWorldCorners();
+    std::vector<wxRealPoint> corners = Helper::GetWorldCorners(rotationAngle, diagonalLength, centerPosition);
     double minx = corners[0].x;
     double maxx = corners[0].x;
     double miny = corners[0].y;
@@ -123,7 +109,7 @@ void RigidBody::PerformCollision() {
     if (AABB.GetLeft() < 0) {
         centerPosition.x = AABB.GetSize().GetWidth() / 2 + 1;
 
-        std::vector<wxRealPoint> corners = GetWorldCorners();
+        std::vector<wxRealPoint> corners = Helper::GetWorldCorners(rotationAngle, diagonalLength, centerPosition);
         wxRealPoint contact = corners[0];
         for (const auto& c : corners) {
             if (c.x < contact.x) contact = c;
@@ -143,7 +129,7 @@ void RigidBody::PerformCollision() {
     if (AABB.GetRight() > wxGetDisplaySize().GetWidth()) {
         centerPosition.x = wxGetDisplaySize().GetWidth() - AABB.GetSize().GetWidth() / 2 - 1;
 
-        std::vector<wxRealPoint> corners = GetWorldCorners();
+        std::vector<wxRealPoint> corners = Helper::GetWorldCorners(rotationAngle, diagonalLength, centerPosition);
         wxRealPoint contact = corners[0];
         for (const auto& c : corners) {
             if (c.x > contact.x) contact = c;
@@ -163,7 +149,7 @@ void RigidBody::PerformCollision() {
     if (AABB.GetTop() < 0) {
         centerPosition.y = AABB.GetSize().GetHeight() / 2 + 1;
 
-        std::vector<wxRealPoint> corners = GetWorldCorners();
+        std::vector<wxRealPoint> corners = Helper::GetWorldCorners(rotationAngle, diagonalLength, centerPosition);
         wxRealPoint contact = corners[0];
         for (const auto& c : corners) {
             if (c.y < contact.y) contact = c;
@@ -183,7 +169,7 @@ void RigidBody::PerformCollision() {
     if (AABB.GetBottom() > wxGetDisplaySize().GetHeight()) {
         centerPosition.y = wxGetDisplaySize().GetHeight() - AABB.GetSize().GetHeight() / 2 - 1;
 
-        std::vector<wxRealPoint> corners = GetWorldCorners();
+        std::vector<wxRealPoint> corners = Helper::GetWorldCorners(rotationAngle, diagonalLength, centerPosition);
         wxRealPoint contact = corners[0];
         for (const auto& c : corners) {
             if (c.y > contact.y) contact = c;

@@ -11,7 +11,9 @@ public:
 private:
     wxTimer* tickTimer = nullptr;
     wxPanel* clickablePanel = nullptr;
+    wxPanel* controlPanel = nullptr;
     wxPanel* closePanel = nullptr;
+    wxPanel* minimizePanel = nullptr;
     RigidBody rigidBody;
 
     wxRealPoint position; // pixels
@@ -26,6 +28,7 @@ private:
 
     bool dragging = false;
     bool closeButtonHovering = false;
+    bool windowIsFocused = true;
     double rotationAngle; // degrees
     int red = 0x3D;
     int green = 0x42;
@@ -40,6 +43,7 @@ private:
     wxGraphicsContext *gc;
 
     void OnTick(wxTimerEvent& event);
+    void OnActivate(wxActivateEvent& event);
     void OnKeyDown(wxKeyEvent& event);
     void OnMouseUp(wxMouseEvent& event);
     void OnMouseDown(wxMouseEvent& event);

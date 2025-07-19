@@ -16,7 +16,6 @@ class RigidBody {
 
         wxRealPoint GetPosition();
         double GetAngle();
-        std::vector<wxRealPoint> GetWorldCorners();
         wxRect2DDouble ComputeAABB();
         void PerformCollision();
     private:

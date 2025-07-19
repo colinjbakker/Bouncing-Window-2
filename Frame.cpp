@@ -11,14 +11,15 @@ Frame::Frame(wxPoint startPosition, wxRealPoint startLinearVelocity, double star
     tickTimer->Start(Helper::INTERVAL);
     
     clickablePanel->SetFocus();
-    clickablePanel->SetBackgroundColour(wxColour(0x1e1e1e));
     clickablePanel->Bind(wxEVT_LEFT_DOWN, &Frame::OnMouseDown, this);
     clickablePanel->Bind(wxEVT_CHAR_HOOK, &Frame::OnKeyDown, this);
     clickablePanel->Bind(wxEVT_PAINT, &Frame::OnPanelPaint, this);
 
     rigidBody = RigidBody(position, startLinearVelocity, rotationAngle, startAngularVelocity, windowSize.GetWidth(), 1.0, 0.05);
 
-    closePanel = new wxPanel(clickablePanel, wxID_ANY, wxPoint(0,0), wxSize(15,15));
+    // controlPanel = new wxPanel(clickablePanel, wxID_ANY, wxPoint(0,0), wxSize()
+
+    closePanel = new wxPanel(clickablePanel, wxID_ANY, wxPoint(0,0), wxSize(16,16));
     closePanel->SetBackgroundStyle(wxBG_STYLE_PAINT);
     closePanel->Bind(wxEVT_PAINT, &Frame::OnClosePanelPaint, this);
     closePanel->Bind(wxEVT_LEFT_DOWN, &Frame::OnExitClick, this);
@@ -27,6 +28,7 @@ Frame::Frame(wxPoint startPosition, wxRealPoint startLinearVelocity, double star
 
     Bind(wxEVT_LEFT_UP, &Frame::OnMouseUp, this);
     Bind(wxEVT_PAINT, &Frame::OnPaint, this);
+    Bind(wxEVT_ACTIVATE, &Frame::OnActivate, this);
 }
 
 void Frame::OnKeyDown(wxKeyEvent& event){
@@ -40,6 +42,14 @@ void Frame::OnKeyDown(wxKeyEvent& event){
 void Frame::OnExitClick(wxMouseEvent& event){
     tickTimer->Stop();
     Close(true);
+}
+void Frame::OnActivate(wxActivateEvent& event){
+    bool isActive = event.GetActive();
+
+    windowIsFocused = isActive;
+    closePanel->Refresh();
+
+    event.Skip();
 }
 
 void Frame::OnTick(wxTimerEvent& event){
@@ -124,21 +134,27 @@ void Frame::OnClosePanelPaint(wxPaintEvent& event) {
     double cy = size.GetHeight() / 2.0;
     double r = std::min(cx, cy) - 1;
     
-
-    if(closeButtonHovering){
-        gc->SetBrush(*wxRED_BRUSH);
+    if(windowIsFocused || closeButtonHovering){
+        gc->SetBrush(gc->CreateBrush(wxBrush(wxColour("#FF605C"))));
         gc->DrawEllipse(cx - r, cy - r, 2 * r, 2 * r);
-        wxRealPoint top = Helper::rotatePointByDegrees({0, r/2}, -rotationAngle);
-        wxRealPoint bottom = Helper::rotatePointByDegrees({0, -r/2}, -rotationAngle);
-        wxRealPoint left = Helper::rotatePointByDegrees({-r/2, 0}, -rotationAngle);
-        wxRealPoint right = Helper::rotatePointByDegrees({r/2, 0}, -rotationAngle);
-
-        gc->SetPen(*wxBLACK_PEN);
-        gc->StrokeLine(top.x+cx, top.y+cy, bottom.x+cx, bottom.y+cy);
-        gc->StrokeLine(left.x+cx, left.y+cy, right.x+cx, right.y+cy);
     } else {
-        gc->SetBrush(gc->CreateBrush(wxBrush(wxColour("#2b2b2b"))));
+        gc->SetBrush(gc->CreateBrush(wxBrush(wxColour("#616161ff"))));
         gc->DrawEllipse(cx - r, cy - r, 2 * r, 2 * r);
+    }
+    
+
+    if (closeButtonHovering) {
+        double lineLen = r * 0.4;
+        wxRealPoint line1_start = Helper::rotatePointByDegrees({-lineLen, -lineLen}, -rotationAngle -45);
+        wxRealPoint line1_end   = Helper::rotatePointByDegrees({lineLen, lineLen}, -rotationAngle - 45);
+
+        wxRealPoint line2_start = Helper::rotatePointByDegrees({-lineLen, lineLen}, -rotationAngle -45);
+        wxRealPoint line2_end   = Helper::rotatePointByDegrees({lineLen, -lineLen}, -rotationAngle -45);
+
+        gc->SetPen(wxPen(wxColour("#750000ff"), 2));
+
+        gc->StrokeLine(cx + line1_start.x, cy + line1_start.y, cx + line1_end.x, cy + line1_end.y);
+        gc->StrokeLine(cx + line2_start.x, cy + line2_start.y, cx + line2_end.x, cy + line2_end.y);
     }
 }
 

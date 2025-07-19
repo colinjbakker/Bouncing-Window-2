@@ -26,18 +26,36 @@ double Helper::degreesToRadians(double degrees) {
     return degrees * (M_PI / 180.0); 
 }
 
-wxGraphicsPath Helper::DrawPath(double rotationAngle, int cornerRadius, double diagonalLength, wxGraphicsContext* gc){
-    wxGraphicsPath path = gc->CreatePath();
-
-    wxRealPoint corners[4];
-    wxRealPoint lineEndpoints[8];
+std::vector<wxRealPoint> Helper::GetWorldCorners(double rotationAngle, double diagonalLength, wxRealPoint centerPosition) {
+    std::vector<wxRealPoint> corners(4);
+    double halfDiagonalLength = diagonalLength / 2;
     int i;
     for(i = 0; i < 4; i++){
         double currAngle = Helper::degreesToRadians(rotationAngle + (90 * i));
+        corners[i] = wxRealPoint(
+            centerPosition.x + halfDiagonalLength * cos(currAngle),
+            centerPosition.y + halfDiagonalLength * sin(currAngle)
+        );
+    }
+    return corners;
+}
+
+std::vector<wxRealPoint> Helper::GetObjectCorners(double rotationAngle, double diagonalLength) {
+    std::vector<wxRealPoint> corners(4);
+    for(int i = 0; i < 4; i++){
+        double currAngle = Helper::degreesToRadians(rotationAngle + (90 * i));
         corners[i] = wxRealPoint(diagonalLength * cos(currAngle), diagonalLength * sin(currAngle));
     }
+    return corners;
+}
 
-    for(i = 0; i < 4; i++){
+wxGraphicsPath Helper::DrawPath(double rotationAngle, int cornerRadius, double diagonalLength, wxGraphicsContext* gc){
+    wxGraphicsPath path = gc->CreatePath();
+
+    std::vector<wxRealPoint> corners = Helper::GetObjectCorners(rotationAngle, diagonalLength);
+    wxRealPoint lineEndpoints[8];
+
+    for(int i = 0; i < 4; i++){
         wxRealPoint startPoint = corners[i];
         wxRealPoint endPoint = (i == 3) ? corners[0] : corners[i+1];
         double distance = sqrt((endPoint.x - startPoint.x) * (endPoint.x - startPoint.x) + (endPoint.y - startPoint.y) * (endPoint.y - startPoint.y));
@@ -57,7 +75,8 @@ wxGraphicsPath Helper::DrawPath(double rotationAngle, int cornerRadius, double d
     path.AddLineToPoint(lineEndpoints[7].x + diagonalLength,-(lineEndpoints[7].y - diagonalLength));
     path.AddArcToPoint(corners[0].x + diagonalLength, -(corners[0].y - diagonalLength), lineEndpoints[0].x + diagonalLength, -(lineEndpoints[0].y - diagonalLength), cornerRadius);
     path.CloseSubpath();
-    gc->SetBrush(gc->CreateBrush(wxBrush(wxColour("#2b2b2b")))); // fill color
+    gc->SetBrush(gc->CreateBrush(wxBrush(wxColour("#2b2b2b"))));
+    gc->SetPen(*wxBLACK_PEN);
     gc->DrawPath(path);
     return path;
 }
